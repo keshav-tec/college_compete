@@ -1,253 +1,174 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import {
-  Eye,
-  EyeOff,
-  LogIn,
-  BookOpen,
-  ShieldCheck,
-} from "lucide-react";
-
-import { loginUser } from "../services/authApi";
+import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { getApiErrorMessage } from "../services/authService";
 
 export default function Login() {
-  const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+  });
 
-  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     setError("");
-
-    if (!email.trim()) {
-      setError("Please enter your email.");
-      return;
-    }
-
-    if (!password) {
-      setError("Please enter your password.");
-      return;
-    }
-
     setLoading(true);
 
     try {
-      const result = await loginUser(
-        email,
-        password
-      );
-
-      if (!result.success) {
-        setError(result.message);
-        return;
-      }
-
-      // ================================================
-      // ROLE BASED REDIRECTION
-      // ================================================
-
-      if (result.user.role === "student") {
-        navigate("/student-dashboard");
-      } else if (result.user.role === "tutor") {
-        navigate("/tutor-dashboard");
-      } else if (result.user.role === "admin") {
-        navigate("/admin-dashboard");
-      }
-    } catch (error) {
-      setError("Something went wrong. Please try again.");
+      await login(form);
+    } catch (err) {
+      setError(getApiErrorMessage(err));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="grid min-h-screen lg:grid-cols-2">
+    <main className="min-h-screen bg-[#05050b] px-5 py-10 text-white">
+      <div className="pointer-events-none fixed inset-0 futuristic-grid opacity-50" />
 
-        {/* LEFT SIDE */}
-        <div className="hidden bg-gradient-to-br from-indigo-600 to-violet-700 p-12 text-white lg:flex lg:flex-col lg:justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <BookOpen size={28} />
+      <div className="relative mx-auto grid min-h-[calc(100vh-5rem)] max-w-6xl items-center gap-12 lg:grid-cols-2">
+        {/* Brand side */}
+        <div className="hidden lg:block">
+          <Link
+            to="/"
+            className="text-sm font-semibold text-white/50 hover:text-white"
+          >
+            ← Back to Peerly
+          </Link>
 
-              <span className="text-2xl font-bold">
-                PeerConnect
-              </span>
-            </div>
+          <div className="mt-16">
+            <p className="text-[10px] uppercase tracking-[0.3em] text-cyan-300/60">
+              Peerly network
+            </p>
 
-            <div className="mt-24 max-w-lg">
-              <h1 className="text-5xl font-bold leading-tight">
-                Learn from peers.
-                <br />
-                Clear every doubt.
-              </h1>
+            <h1 className="mt-5 text-6xl font-black leading-none">
+              Welcome
+              <br />
+              <span className="gradient-text">back.</span>
+            </h1>
 
-              <p className="mt-6 text-lg leading-8 text-indigo-100">
-                Connect with experienced senior students,
-                ask academic questions and build your
-                learning community.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 text-indigo-100">
-            <ShieldCheck size={20} />
-            <span className="text-sm">
-              Secure role-based access
-            </span>
+            <p className="mt-6 max-w-md text-sm leading-7 text-white/40">
+              Continue your learning journey, connect with peer tutors,
+              and clear the next doubt.
+            </p>
           </div>
         </div>
 
-        {/* RIGHT SIDE */}
-        <div className="flex items-center justify-center p-6 sm:p-10">
-          <div className="w-full max-w-md">
+        {/* Form */}
+        <div className="mx-auto w-full max-w-md">
+          <div className="glass-strong rounded-[30px] p-7 shadow-2xl sm:p-9">
+            <Link
+              to="/"
+              className="text-lg font-black lg:hidden"
+            >
+              Peerly
+            </Link>
 
-            {/* MOBILE LOGO */}
-            <div className="mb-8 flex items-center justify-center gap-2 lg:hidden">
-              <BookOpen
-                size={27}
-                className="text-indigo-600"
-              />
+            <div className="mt-8 lg:mt-0">
+              <p className="text-[10px] uppercase tracking-[0.25em] text-violet-300/70">
+                Sign in
+              </p>
 
-              <span className="text-2xl font-bold text-slate-800">
-                PeerConnect
-              </span>
+              <h2 className="mt-3 text-3xl font-black">
+                Access your account
+              </h2>
+
+              <p className="mt-2 text-xs text-white/35">
+                Enter your credentials to continue.
+              </p>
             </div>
 
-            <div className="rounded-3xl bg-white p-7 shadow-xl sm:p-9">
-
-              <div className="mb-7">
-                <h2 className="text-2xl font-bold text-slate-800">
-                  Welcome back
-                </h2>
-
-                <p className="mt-2 text-sm text-slate-500">
-                  Login to continue to your dashboard.
-                </p>
+            {error && (
+              <div className="mt-6 rounded-xl border border-red-400/20 bg-red-400/10 px-4 py-3 text-xs leading-5 text-red-300">
+                {error}
               </div>
+            )}
 
-              <form
-                onSubmit={handleSubmit}
-                className="space-y-5"
-              >
+            <form
+              onSubmit={handleSubmit}
+              className="mt-7 space-y-5"
+            >
+              <label className="block">
+                <span className="text-xs font-semibold text-white/60">
+                  Email
+                </span>
 
-                {/* EMAIL */}
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-700">
-                    Email address
-                  </label>
+                <input
+                  type="email"
+                  required
+                  value={form.email}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      email: e.target.value,
+                    })
+                  }
+                  placeholder="you@example.com"
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/20 focus:border-violet-400/40"
+                />
+              </label>
 
+              <label className="block">
+                <span className="text-xs font-semibold text-white/60">
+                  Password
+                </span>
+
+                <div className="relative mt-2">
                   <input
-                    type="email"
-                    value={email}
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={form.password}
                     onChange={(e) =>
-                      setEmail(e.target.value)
+                      setForm({
+                        ...form,
+                        password: e.target.value,
+                      })
                     }
-                    placeholder="you@example.com"
-                    className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                    placeholder="Enter your password"
+                    className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 pr-20 text-sm text-white outline-none transition placeholder:text-white/20 focus:border-violet-400/40"
                   />
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowPassword(!showPassword)
+                    }
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-white/35 hover:text-white"
+                  >
+                    {showPassword ? "HIDE" : "SHOW"}
+                  </button>
                 </div>
+              </label>
 
-                {/* PASSWORD */}
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-700">
-                    Password
-                  </label>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full rounded-xl bg-gradient-to-r from-violet-500 to-indigo-500 py-3.5 text-sm font-bold text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {loading ? "Signing in..." : "Log In"}
+              </button>
+            </form>
 
-                  <div className="relative">
-                    <input
-                      type={
-                        showPassword
-                          ? "text"
-                          : "password"
-                      }
-                      value={password}
-                      onChange={(e) =>
-                        setPassword(e.target.value)
-                      }
-                      placeholder="Enter your password"
-                      className="w-full rounded-xl border border-slate-200 px-4 py-3 pr-12 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setShowPassword(!showPassword)
-                      }
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
-                    >
-                      {showPassword ? (
-                        <EyeOff size={19} />
-                      ) : (
-                        <Eye size={19} />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                {/* ERROR */}
-                {error && (
-                  <div className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
-                    {error}
-                  </div>
-                )}
-
-                {/* LOGIN */}
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 py-3 font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-60"
-                >
-                  <LogIn size={18} />
-
-                  {loading
-                    ? "Logging in..."
-                    : "Login"}
-                </button>
-              </form>
-
-              {/* REGISTER */}
-              <p className="mt-7 text-center text-sm text-slate-500">
-                Don't have an account?{" "}
-                <Link
-                  to="/register"
-                  className="font-semibold text-indigo-600 hover:underline"
-                >
-                  Create account
-                </Link>
-              </p>
-            </div>
-
-            {/* DEMO CREDENTIALS */}
-            <div className="mt-5 rounded-2xl border border-indigo-100 bg-indigo-50 p-4">
-              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-indigo-600">
-                Competition Demo Accounts
-              </p>
-
-              <div className="space-y-1 text-xs text-slate-600">
-                <p>
-                  Student: student@test.com / 123456
-                </p>
-
-                <p>
-                  Tutor: tutor@test.com / 123456
-                </p>
-
-                <p>
-                  Admin: admin@test.com / 123456
-                </p>
-              </div>
-            </div>
-
+            <p className="mt-7 text-center text-xs text-white/30">
+              Don't have an account?{" "}
+              <Link
+                to="/signup"
+                className="font-bold text-violet-300 hover:text-violet-200"
+              >
+                Create one
+              </Link>
+            </p>
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
