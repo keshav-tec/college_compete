@@ -1,167 +1,45 @@
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
 
+import Home from "./pages/Home";
 import Login from "./pages/Login";
-import Register from "./pages/Register";
+import Signup from "./pages/Signup";
 
-import StudentDashboard from "./pages/StudentDashboard";
-import TutorDashboard from "./pages/TutorDashboard";
-import AdminDashboard from "./pages/AdminDashboard";
-
-import { getCurrentUser } from "./services/authApi";
-
-// =====================================================
-// PROTECTED ROUTE
-// =====================================================
-
-function ProtectedRoute({
-  children,
-  allowedRole,
-}) {
-  const user = getCurrentUser();
-
-  // Not logged in
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  // Wrong role
-  if (
-    allowedRole &&
-    user.role !== allowedRole
-  ) {
-    if (user.role === "student") {
-      return (
-        <Navigate
-          to="/student-dashboard"
-          replace
-        />
-      );
-    }
-
-    if (user.role === "tutor") {
-      return (
-        <Navigate
-          to="/tutor-dashboard"
-          replace
-        />
-      );
-    }
-
-    if (user.role === "admin") {
-      return (
-        <Navigate
-          to="/admin-dashboard"
-          replace
-        />
-      );
-    }
-  }
-
-  return children;
-}
-
-// =====================================================
-// APP
-// =====================================================
-
-function App() {
+function DashboardPlaceholder() {
   return (
-    <BrowserRouter>
-
-      <Routes>
-
-        {/* ==========================================
-            PUBLIC
-        =========================================== */}
-
-        <Route
-          path="/"
-          element={
-            <Navigate
-              to="/login"
-              replace
-            />
-          }
-        />
-
-        <Route
-          path="/login"
-          element={<Login />}
-        />
-
-        <Route
-          path="/register"
-          element={<Register />}
-        />
-
-        {/* ==========================================
-            STUDENT
-        =========================================== */}
-
-        <Route
-          path="/student-dashboard"
-          element={
-            <ProtectedRoute
-              allowedRole="student"
-            >
-              <StudentDashboard />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* ==========================================
-            TUTOR
-        =========================================== */}
-
-        <Route
-          path="/tutor-dashboard"
-          element={
-            <ProtectedRoute
-              allowedRole="tutor"
-            >
-              <TutorDashboard />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* ==========================================
-            ADMIN
-        =========================================== */}
-
-        <Route
-          path="/admin-dashboard"
-          element={
-            <ProtectedRoute
-              allowedRole="admin"
-            >
-              <AdminDashboard />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* ==========================================
-            UNKNOWN URL
-        =========================================== */}
-
-        <Route
-          path="*"
-          element={
-            <Navigate
-              to="/login"
-              replace
-            />
-          }
-        />
-
-      </Routes>
-
-    </BrowserRouter>
+    <div className="flex min-h-screen items-center justify-center bg-[#05050b] text-2xl font-bold text-white">
+      Dashboard loading...
+    </div>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={<Home />} />
+
+          <Route path="/login" element={<Login />} />
+
+          <Route path="/signup" element={<Signup />} />
+
+          <Route
+            path="/dashboard/student"
+            element={<DashboardPlaceholder />}
+          />
+
+          <Route
+            path="/dashboard/tutor"
+            element={<DashboardPlaceholder />}
+          />
+
+          <Route
+            path="/dashboard/admin"
+            element={<DashboardPlaceholder />}
+          />
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
+  );
+}
